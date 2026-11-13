@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Support\PesanDb;
 
 class PenjualanController extends Controller
 {
@@ -102,7 +103,7 @@ class PenjualanController extends Controller
                 json_encode($items),
             ]);
         } catch (QueryException $e) {
-            $alasan = $this->pesanDariDb($e);
+            $alasan = PesanDb::dari($e);
             Log::warning('Penjualan ditolak', [
                 'faktur' => $faktur,
                 'username' => $user->username,
@@ -128,24 +129,22 @@ class PenjualanController extends Controller
     {
         $penjualan = Penjualan::with(['cabang', 'pengguna', 'detail.obat'])->findOrFail($id);
 
-        return view('penjualan.show', compact('penjualan'));
+        // Batch yang terpakai per item (hasil FEFO), dikelompokkan per obat
+        $alokasi = DB::table('alokasi_batch as a')
+            ->join('batch_stok as b', 'b.id', '=', 'a.batch_id')
+            ->join('detail_penjualan as d', 'd.id', '=', 'a.detail_penjualan_id')
+            ->where('d.penjualan_id', $penjualan->id)
+            ->orderBy('b.tanggal_kedaluwarsa')
+            ->select('d.obat_id', 'b.no_batch', 'b.tanggal_kedaluwarsa', 'a.jumlah')
+            ->get()
+            ->groupBy('obat_id');
+
+        return view('penjualan.show', compact('penjualan', 'alokasi'));
     }
 
     private function pastikanBisaJual(): void
     {
         // Admin Pusat hanya memantau; transaksi dilakukan di cabang
         abort_if(Auth::user()->isAdminPusat(), 403, 'Admin Pusat tidak melakukan transaksi penjualan.');
-    }
-
-    // Ambil pesan RAISE EXCEPTION dari PostgreSQL (SQLSTATE P0001)
-    private function pesanDariDb(QueryException $e): string
-    {
-        if ($e->getCode() === 'P0001' && preg_match('/ERROR:\s+(.+?)(\n|\(Connection|$)/s', $e->getMessage(), $m)) {
-            return trim($m[1]);
-        }
-
-        report($e);
-
-        return 'Transaksi gagal disimpan. Silakan coba lagi.';
     }
 }

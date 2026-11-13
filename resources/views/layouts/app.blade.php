@@ -15,7 +15,13 @@
             ['Dashboard', 'dashboard', 'dashboard'],
             ['Penjualan', 'penjualan.*', 'penjualan.index'],
             ['Stok', 'stok.*', 'stok.index'],
+            ['Obat', 'obat.*', 'obat.index'],
+            ['Obat Terlaris', 'laporan.*', 'laporan.terlaris'],
+            ['Batch', 'batch.*', 'batch.index'],
         ];
+        if ($pengguna->isAdminPusat()) {
+            $menu[] = ['Monitoring', 'monitoring.*', 'monitoring.index'];
+        }
     @endphp
 
     <div class="flex min-h-screen">

@@ -35,7 +35,15 @@
             <tbody>
                 @foreach ($penjualan->detail as $d)
                     <tr>
-                        <td>{{ $d->obat->nama }}</td>
+                        <td>
+                            {{ $d->obat->nama }}
+                            @foreach ($alokasi[$d->obat_id] ?? [] as $a)
+                                <div class="text-xs text-neutral-500">
+                                    Batch {{ $a->no_batch }} (exp
+                                    {{ \Carbon\Carbon::parse($a->tanggal_kedaluwarsa)->format('d/m/Y') }}) &times; {{ $a->jumlah }}
+                                </div>
+                            @endforeach
+                        </td>
                         <td class="text-right">Rp {{ number_format($d->harga_satuan, 0, ',', '.') }}</td>
                         <td class="text-right">{{ $d->jumlah }}</td>
                         <td class="text-right">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</td>

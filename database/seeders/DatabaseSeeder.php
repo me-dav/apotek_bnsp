@@ -94,8 +94,26 @@ class DatabaseSeeder extends Seeder
                 }
 
                 Stok::create(['cabang_id' => $c->id, 'obat_id' => $o->id, 'jumlah' => $jumlah]);
+
+                // Pecah menjadi dua batch: yang lama cepat kedaluwarsa, yang baru masih lama
+                $lama = intdiv($jumlah, 2);
+                $this->buatBatch($c->id, $o->id, 'B-LAMA', now()->addDays(60)->toDateString(), $lama);
+                $this->buatBatch($c->id, $o->id, 'B-BARU', now()->addDays(400)->toDateString(), $jumlah - $lama);
             }
         }
+    }
+
+    private function buatBatch(int $cabangId, int $obatId, string $noBatch, string $kedaluwarsa, int $jumlah): void
+    {
+        DB::table('batch_stok')->insert([
+            'cabang_id' => $cabangId,
+            'obat_id' => $obatId,
+            'no_batch' => $noBatch,
+            'tanggal_kedaluwarsa' => $kedaluwarsa,
+            'jumlah' => $jumlah,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function seedPengguna($cabang)

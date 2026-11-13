@@ -61,3 +61,8 @@ GRANT EXECUTE ON PROCEDURE simpan_penjualan(varchar, bigint, bigint, jsonb)
     TO apotek_admin, apotek_apoteker, apotek_kasir;
 GRANT EXECUTE ON FUNCTION hitung_total_faktur(bigint)
     TO apotek_admin, apotek_apoteker, apotek_kasir;
+
+GRANT SELECT ON batch_stok, alokasi_batch
+    TO apotek_admin, apotek_apoteker, apotek_kasir;
+GRANT EXECUTE ON PROCEDURE terima_batch(bigint, bigint, bigint, varchar, date, integer)
+    TO apotek_admin, apotek_apoteker;
