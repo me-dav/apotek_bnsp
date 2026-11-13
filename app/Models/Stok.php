@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\HanyaCabangSendiri;
 
 class Stok extends Model
 {
+    use HanyaCabangSendiri;
     protected $table = 'stok';
 
     protected $fillable = ['cabang_id', 'obat_id', 'jumlah'];

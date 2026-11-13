@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Concerns\HanyaCabangSendiri;
 
 class LogStok extends Model
 {
+    use HanyaCabangSendiri;
     protected $table = 'log_stok';
 
     public $timestamps = false;

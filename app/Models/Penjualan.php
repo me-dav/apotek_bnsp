@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\HanyaCabangSendiri;
 
 class Penjualan extends Model
 {
+    use HanyaCabangSendiri;
     protected $table = 'penjualan';
 
     public $timestamps = false;

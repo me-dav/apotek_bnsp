@@ -42,4 +42,13 @@ class Pengguna extends Authenticatable
     {
         return $this->role === self::KASIR;
     }
+
+    public function labelRole(): string
+    {
+        return [
+            self::ADMIN_PUSAT => 'Admin Pusat',
+            self::APOTEKER => 'Apoteker',
+            self::KASIR => 'Kasir',
+        ][$this->role] ?? $this->role;
+    }
 }

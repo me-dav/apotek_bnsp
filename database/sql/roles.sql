@@ -27,7 +27,7 @@ GRANT USAGE ON SCHEMA public
 
 -- 3) Akun login: hanya membaca pengguna (+ ubah hash/token bila diperlukan Laravel)
 GRANT SELECT ON pengguna TO apotek_login;
-GRANT UPDATE (password, remember_token) ON pengguna TO apotek_login;
+GRANT UPDATE (password, remember_token, updated_at) ON pengguna TO apotek_login;
 
 -- 4) Semua peran aplikasi boleh membaca data master & transaksi
 GRANT SELECT ON cabang, kategori_obat, obat, stok,
@@ -51,7 +51,12 @@ GRANT UPDATE (remember_token) ON pengguna TO apotek_apoteker, apotek_kasir;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public
     TO apotek_admin, apotek_apoteker;
 
--- 9) Menyimpan penjualan hanya lewat procedure
+-- 9) Tabel infrastruktur Laravel (cache untuk rate limiter login, sessions bila
+--    SESSION_DRIVER=database). Dipakai sebelum dan sesudah login, jadi semua akun perlu.
+GRANT SELECT, INSERT, UPDATE, DELETE ON cache, cache_locks, sessions
+    TO apotek_login, apotek_admin, apotek_apoteker, apotek_kasir;
+
+-- 10) Menyimpan penjualan hanya lewat procedure
 GRANT EXECUTE ON PROCEDURE simpan_penjualan(varchar, bigint, bigint, jsonb)
     TO apotek_admin, apotek_apoteker, apotek_kasir;
 GRANT EXECUTE ON FUNCTION hitung_total_faktur(bigint)
