@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'koneksi.role' => \App\Http\Middleware\PakaiKoneksiRole::class,
         ]);
+
+        // Di server, HTTPS dihentikan di Nginx aaPanel lalu diteruskan ke container.
+        // Percayai header X-Forwarded-* agar URL & redirect memakai https.
+        // Aman karena port container hanya terbuka di 127.0.0.1.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

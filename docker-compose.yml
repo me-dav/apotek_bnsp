@@ -1,15 +1,19 @@
 # Deploy: Nginx + PHP-FPM (Laravel) + PostgreSQL 17
-#   1) cp .env.production.example .env.production   lalu isi kata sandi + APP_KEY
-#   2) docker compose up -d --build
-# Semua konfigurasi aplikasi & kata sandi dibaca dari .env.production (tidak di-commit).
-
-name: apotek
+#
+# Satu server bisa menjalankan staging & production: clone ke 2 folder berbeda, lalu
+# di masing-masing folder buat file ".env" (dibaca docker compose, bukan Laravel):
+#
+#   COMPOSE_PROJECT_NAME=apotek-staging     # nama unik -> container & volume terpisah
+#   ENV_FILE=.env.staging                   # konfigurasi aplikasi + kata sandi
+#   APP_PORT=8081                           # port lokal, di-proxy oleh aaPanel
+#
+# Jalankan: docker compose up -d --build
 
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ${ENV_FILE:-.env.production}
     environment:
       TZ: Asia/Jakarta
       PGTZ: Asia/Jakarta
@@ -27,9 +31,8 @@ services:
     build:
       context: .
       target: app
-    image: apotek-app:latest
     restart: unless-stopped
-    env_file: .env.production
+    env_file: ${ENV_FILE:-.env.production}
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -43,10 +46,10 @@ services:
     build:
       context: .
       target: web
-    image: apotek-web:latest
     restart: unless-stopped
+    # Hanya bisa diakses dari server itu sendiri; publik masuk lewat reverse proxy aaPanel
     ports:
-      - "${APP_PORT:-80}:80"
+      - "127.0.0.1:${APP_PORT:-8080}:80"
     depends_on:
       - app
 
