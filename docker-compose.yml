@@ -1,0 +1,55 @@
+# Deploy: Nginx + PHP-FPM (Laravel) + PostgreSQL 17
+#   1) cp .env.production.example .env.production   lalu isi kata sandi + APP_KEY
+#   2) docker compose up -d --build
+# Semua konfigurasi aplikasi & kata sandi dibaca dari .env.production (tidak di-commit).
+
+name: apotek
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      TZ: Asia/Jakarta
+      PGTZ: Asia/Jakarta
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Port database sengaja tidak dibuka ke luar host
+
+  app:
+    build:
+      context: .
+      target: app
+    image: apotek-app:latest
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      target: web
+    image: apotek-web:latest
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  storage:
