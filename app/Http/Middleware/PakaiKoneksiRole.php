@@ -24,5 +24,6 @@ class PakaiKoneksiRole
         $user->setConnection($koneksi);
 
         return $next($request);
+        
     }
 }
